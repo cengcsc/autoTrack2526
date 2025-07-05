@@ -1,0 +1,747 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <base target="_top" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>BUCENG AutoTrack</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Poppins:wght@600;700&display=swap" rel="stylesheet">
+  <audio id="successSound" src="https://assets.mixkit.co/sfx/preview/mixkit-achievement-bell-600.wav" preload="auto"></audio>
+  <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+
+  <style>
+    :root {
+  --bg: #ffffff;
+  --text: #1c1c1c;
+  --button: #2e7d32;
+  --button-hover: #256628;
+  --paid: #2e7d32;           /* deep green */
+  --unpaid: #e67e22;         /* richer orange for better contrast */
+  --container-bg: #f5f5f5;
+  --info-bg: #fffefb;        /* near-white for subtle card contrast */
+  --note-bg: #fff8d2;
+  --note-border: #f39c12;
+  --note-text: #3e3e3e;
+}
+
+
+    body.dark {
+  --bg: #121212;
+  --text: #e0e0e0;
+  --button: #43a047;
+  --button-hover: #388e3c;
+  --paid: #81c784;           /* soft green */
+  --unpaid: #f4a261;         /* warm orange for contrast */
+  --container-bg: #1e1e1e;
+  --info-bg: #232323;
+  --note-bg: #2d2b1f;
+  --note-border: #f7d774;
+  --note-text: #f9f9c5;
+}
+
+
+    html, body {
+      transition: background-color 0.5s ease, color 0.5s ease;
+    }
+
+    body {
+      margin: 0;
+      font-family: 'Inter', sans-serif;
+      background-color: var(--bg);
+      color: var(--text);
+      padding: 24px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+
+    h1, h2, h3 {
+      font-family: 'Poppins', sans-serif;
+    }
+
+    .container {
+      display: flex;
+      flex-direction: column;
+      width: 100%;
+      max-width: 600px;
+      background-color: var(--container-bg);
+      padding: 40px 24px;
+      border-radius: 20px;
+      box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
+      margin-bottom: 32px;
+    }
+
+    .left, .right {
+      width: 100%;
+    }
+
+    .left {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      margin-bottom: 40px;
+    }
+
+    .right {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: flex-start;
+      width: 100%;
+      min-height: 300px;
+    }
+
+    #result {
+      font-size: 15px;
+      line-height: 1.7;
+      transition: all 0.4s ease;
+      width: 100%;
+    }
+
+    .logo {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 8px;
+    }
+
+    .logo img { height: 70px; }
+
+    .header-section {
+      text-align: center;
+      margin-bottom: 8px;
+    }
+
+    .header-section h1 {
+      margin: 0;
+      font-size: 16px;
+      font-weight: 500;
+    }
+
+    .header-section h2 {
+      margin: 0px 0 0 0;
+      font-size: 26px;
+      font-weight: 700;
+    }
+
+    .header-section p {
+      margin: 0px 0;
+      font-size: 13px;
+      color: gray;
+    }
+
+    .highlight-title {
+      font-size: 30px;
+      font-weight: 700;
+      background: linear-gradient(90deg, #388e3c, #66bb6a);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      text-align: center;
+      margin: 12px 0 8px;
+    }
+
+    .description, .example { text-align: center; }
+
+    .example {
+      font-size: 13px;
+      color: gray;
+      margin-bottom: 20px;
+    }
+
+    input[type="text"] {
+  width: 100%;
+  max-width: 300px; /* 👈 this line is new */
+  padding: 14px;
+  font-size: 16px;
+  margin-bottom: 16px;
+  border-radius: 30px;
+  border: 1px solid #ccc;
+    text-align: center; 
+}
+
+
+    button {
+      width: 100%;
+      max-width: 300px;
+      padding: 14px;
+      font-size: 16px;
+      background-color: var(--button);
+      color: #fff;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+    }
+
+    button:hover { background-color: var(--button-hover); }
+
+    .status-banner {
+      padding: 14px;
+      color: #fff;
+      font-weight: bold;
+      text-align: center;
+      font-size: 18px;
+      border-radius: 8px;
+      margin-bottom: 20px;
+    }
+
+    .paid { background-color: var(--paid); }
+    .unpaid { background-color: var(--unpaid); }
+    .error { color: red; text-align: center; margin-top: 12px; }
+/*
+    .toggle-container {
+      margin-top: 40px;
+      padding: 14px;
+      border-radius: 12px;
+      text-align: center;
+      background-color: rgba(0, 0, 0, 0.05);
+      width: 100%;
+    }
+    */
+
+    .toggle-container input {
+      margin-right: 6px;
+      transform: scale(1.2);
+    }
+
+    .checking {
+      text-align: center;
+      color: #888;
+      font-size: 15px;
+    }
+
+    .loader {
+      border: 5px solid #f3f3f3;
+      border-top: 5px solid var(--button);
+      border-radius: 50%;
+      width: 60px;
+      height: 60px;
+      animation: spin 1s linear infinite;
+      margin: 0 auto 20px;
+    }
+
+    @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+
+    .placeholder, .not-found {
+      text-align: center;
+      color: #999;
+      font-size: 15px;
+      padding: 20px 10px;
+    }
+
+    .confetti-canvas {
+      position: fixed;
+      top: 0;
+      left: 0;
+      pointer-events: none;
+      z-index: 9999;
+    }
+
+    .info-board {
+  width: 100%;
+  max-width: 600px;
+  margin: 0 auto 40px;
+  background-color: var(--info-bg);
+  padding: 32px;
+  border-radius: 20px;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.05);
+  line-height: 1.7;
+  font-size: 15px;
+}
+
+
+    .info-board h3 {
+      font-size: 22px;
+      border-bottom: 1px solid #ccc;
+      padding-bottom: 8px;
+      margin-bottom: 12px;
+    }
+
+    .info-board ul {
+      padding-left: 20px;
+    }
+
+    .info-board li {
+      margin-bottom: 8px;
+    }
+
+    @keyframes shake {
+      0%, 100% { transform: translateX(0); }
+      20%, 60% { transform: translateX(-10px); }
+      40%, 80% { transform: translateX(10px); }
+    }
+
+    .shake { animation: shake 0.5s ease; }
+
+    .pulse-red { animation: pulseRed 2s ease-out; }
+
+    @keyframes pulseRed {
+      0% { box-shadow: 0 0 0px rgba(255, 0, 0, 0.5); }
+      50% { box-shadow: 0 0 15px rgba(255, 0, 0, 0.6); }
+      100% { box-shadow: 0 0 0px rgba(255, 0, 0, 0.5); }
+    }
+
+    .emoji-rain {
+      position: fixed;
+      top: 0;
+      left: 0;
+      pointer-events: none;
+      width: 100%;
+      height: 100%;
+      z-index: 9999;
+      overflow: hidden;
+    }
+
+    .emoji {
+      position: absolute;
+      font-size: 2rem;
+      animation: fall 3s linear infinite;
+    }
+
+    @keyframes fall {
+      0% {
+        transform: translateY(-100px) rotate(0deg);
+        opacity: 1;
+      }
+      100% {
+        transform: translateY(100vh) rotate(360deg);
+        opacity: 0;
+      }
+    }
+
+   .paid-modern {
+  background-color: #e8f5e9;
+  color: #2e7d32;
+  border: 1px solid #c8e6c9;
+  font-size: 18px;
+  font-weight: 600;
+  padding: 14px 16px;       /* reduced horizontal padding */
+  border-radius: 8px;
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
+  box-sizing: border-box;   /* 👈 ensures padding stays inside width */
+}
+
+
+.fb-button {
+  display: inline-block;
+  background-color: #1877f2;
+  color: white;
+  padding: 12px 20px;
+  border-radius: 6px;
+  text-decoration: none;
+  font-weight: 500;
+  font-size: 15px;
+  transition: background-color 0.3s ease;
+}
+
+.fb-button:hover {
+  background-color: #145dbf;
+}
+
+.check-icon {
+  background-color: #4caf50;
+  color: white;
+  border-radius: 50%;
+  padding: 6px;
+  font-size: 14px;
+  width: 24px;
+  height: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.unpaid-modern {
+  background-color: #ffebee;
+  color: #b71c1c;
+  border: 1px solid #ef9a9a;
+  font-size: 18px;
+  font-weight: 600;
+  padding: 14px 16px;
+  border-radius: 8px;
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
+  box-sizing: border-box;
+}
+
+.x-icon {
+  background-color: #e53935;
+  color: white;
+  border-radius: 50%;
+  padding: 6px;
+  font-size: 14px;
+  width: 24px;
+  height: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.cta-button {
+  background-color: #c62828;
+  color: white;
+  padding: 10px 20px;
+  border-radius: 6px;
+  text-decoration: none;
+  font-weight: 500;
+  display: inline-block;
+}
+
+.unpaid-modern {
+  background-color: #ffebee;
+  color: #b71c1c;
+  border: 1px solid #ef9a9a;
+  font-size: 18px;
+  font-weight: 600;
+  padding: 14px 20px;
+  border-radius: 8px;
+  display: block;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
+}
+
+.unpaid-flex {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.x-icon {
+  background-color: #e53935;
+  color: white;
+  border-radius: 50%;
+  padding: 6px;
+  font-size: 14px;
+  width: 24px;
+  height: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.pay-button {
+  background-color: #c62828;
+  color: white;
+  padding: 8px 14px;
+  border-radius: 6px;
+  text-decoration: none;
+  font-size: 14px;
+  font-weight: 500;
+  white-space: nowrap;
+}
+.note-box {
+  background-color: var(--note-bg);
+  color: var(--note-text);
+  border-left: 5px solid var(--note-border);
+  padding: 16px;
+  border-radius: 8px;
+  width: 100%;
+  max-width: 600px;
+  font-size: 14px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+  margin: 0 auto 20px;
+}
+
+
+
+
+
+  </style>
+</head>
+
+<body>
+  <canvas id="confettiCanvas" class="confetti-canvas"></canvas>
+  <div class="emoji-rain" id="emojiRain"></div>
+    <div class="toggle-container" style="position: absolute; top: 16px; right: 16px; padding: 6px 12px; border-radius: 12px; background-color: rgba(0, 0, 0, 0.07); font-size: 14px;">
+  <label style="display: flex; align-items: center; gap: 4px;">
+    <input type="checkbox" id="darkModeToggle" onchange="toggleDarkMode()"> 🌙
+  </label>
+</div>
+<div class="note-box">
+  ⚠️ <strong>Note:</strong> This is only a <strong>test deployment</strong> of the BUCENG-CSC Fee Checker System. Data shown may not reflect official or final records.
+</div>
+  <div class="container">
+    <div class="left">
+      <div class="logo">
+        <img src="https://i.ibb.co/1txQWXqf/CSC-LOGO.png" alt="CSC Logo" />
+        <img src="https://i.ibb.co/1t0FW4FR/ACROSS-METAL-LOGO.png" alt="Across Logo" />
+      </div>
+      <div class="header-section">
+        <h1>Bicol University College of Engineering</h1>
+        <h2>COLLEGE STUDENT COUNCIL</h2>
+        <p>Academic Year 2024–2025</p>
+      </div>
+      <h2 class="highlight-title">BUCENG-CSC AutoTrack</h2>
+      <div class="description">Enter your Student ID to check payment status for 2025-2026.</div>
+      <div class="example">e.g. "2022-XXXX-XXXX" or "2024-XX-XXXXX"</div>
+      <label for="studentId" style="font-size:14px; margin-bottom: 4px; display:block;">Enter Student ID</label>
+    <input type="text" id="studentId" placeholder="e.g. 2022-XXXX-XXXX" />
+      <button onclick="checkStatus()">Check</button>
+      
+    </div>
+    <div class="right">
+      <div id="result">
+        <div class="placeholder">🤓 A result will appear here once you click that shiny green <strong>Check</strong> button!</div>
+      </div>
+    </div>
+  </div>
+
+ 
+
+
+
+
+  <div class="info-board">
+    <h3>📌 About the CSC/USC Fee</h3>
+    <ul>
+      <li>💰 <strong>CSC Fee:</strong> ₱170.00</li>
+      <li>🏛️ <strong>USC Fee:</strong> ₱28.00</li>
+      <li>🆔 <strong>ID Validation:</strong> ₱20.00</li>
+      <li>🛡️ <strong>Insurance:</strong> ₱2.00</li>
+      <li>🧮 <strong>Total:</strong> ₱220.00 per student</li>
+    </ul>
+    <h3>🧾 Issuance of Official Receipts</h3>
+    <ul>
+      <li>📦 Distributed by Department-Based Officers (DBOS)</li>
+      <li>👨‍💼 Block Presidents help with distribution for 2nd–4th years</li>
+    </ul>
+    <h3>📢 Payment Requirement</h3>
+    <p>💡 Required before Certificate of Registration (COR) and ID validation</p>
+  </div>
+
+  <script>
+    function startSadEmojiRain(count = 20) {
+      const rainContainer = document.getElementById("emojiRain");
+      rainContainer.innerHTML = "";
+
+      for (let i = 0; i < count; i++) {
+        const emoji = document.createElement("div");
+        emoji.classList.add("emoji");
+        emoji.textContent = "😢";
+        emoji.style.left = Math.random() * 100 + "vw";
+        emoji.style.animationDuration = 2 + Math.random() * 2 + "s";
+        emoji.style.fontSize = 24 + Math.random() * 20 + "px";
+        rainContainer.appendChild(emoji);
+      }
+
+      setTimeout(() => {
+        rainContainer.innerHTML = "";
+      }, 4000);
+    }
+
+    const studentIdInput = document.getElementById("studentId");
+    const resultDiv = document.getElementById("result");
+    const successSound = document.getElementById("successSound");
+
+    studentIdInput.addEventListener("input", () => {
+      resultDiv.classList.remove("visible");
+      resultDiv.innerHTML = `<div class="placeholder">🤓 A result will appear here once you click that shiny green <strong>Check</strong> button!</div>`;
+    });
+
+    studentIdInput.addEventListener("keypress", function (e) {
+      if (e.key === "Enter") checkStatus();
+    });
+
+    function checkStatus() {
+      const id = studentIdInput.value.trim();
+      if (!id) return;
+      resultDiv.classList.remove("visible");
+      resultDiv.innerHTML = `
+        <div class="loader"></div>
+        <div class="checking">Fetching payment status... please wait patiently 🧾</div>`;
+        const startTime = Date.now(); // start timer
+
+                let timerInterval;
+                let elapsedSeconds = 0;
+                const timerElement = document.createElement("div");
+                timerElement.style.textAlign = "center";
+                timerElement.style.color = "#888";
+                timerElement.style.marginTop = "8px";
+                resultDiv.appendChild(timerElement);
+
+                timerInterval = setInterval(() => {
+                  elapsedSeconds++;
+                  timerElement.innerText = `⏳ Time elapsed: ${elapsedSeconds} second${elapsedSeconds !== 1 ? "s" : ""}...`;
+                }, 1000);
+
+      google.script.run.withSuccessHandler(function (data) {
+        if (data.error) {
+          resultDiv.innerHTML = `
+            <div class="not-found">🕵️‍♂️ Hmm... no record found for that Student ID.<br>Double-check it and try again! 🙈</div>
+          `;
+          return;
+        }
+        clearInterval(timerInterval); // stop timer
+
+          const totalTime = ((Date.now() - startTime) / 1000).toFixed(1);
+          const funnyLines = [
+            "⏱ That took longer than my coffee break!",
+            "😎 Congrats bes, legit na yan!",
+            "🐢 Slow and steady wins the race... or not.",
+            "🚀 Ay grabe, ganun kabilis???",
+            "🤖 Even AI gets tired sometimes.",
+            "🔍 Searching through the matrix...",
+            "📡 Signal from Mars confirmed!",
+            "🧠 Shagidi vibes ka diyan 🕺",
+            "📦 Just unboxed your status!",
+            "📞 Your data called — it said you're good.",
+            "🕸️ Dusted off some cobwebs to find that!",
+            "💡 That loaded faster than my thoughts.",
+            "⚡ Powered by coffee and JavaScript!",
+            "📊 Found it hidden under 3 pivot tables.",
+            "🎯 Bullseye! Got your status!",
+            "🧃 Squeezed the data just right.",
+            "🌍 Data fetched with zero carbon footprint!",
+            "📅 Verified from the archives of 2024.",
+            "🛰 Pinged space, and it replied with your record.",
+            "🧙‍♂️ That status was summoned by code magic."
+            
+          ];
+
+          const randomLine = funnyLines[Math.floor(Math.random() * funnyLines.length)];
+         
+
+          
+
+
+     const isPaid = data.status.toLowerCase() === "paid";
+const statusBanner = isPaid 
+  ? `<div class="status-banner paid-modern"><span class="check-icon">✔</span> PAID</div>` 
+  : `
+    <div class="status-banner unpaid-modern">
+      <div class="unpaid-flex">
+        <div class="x-icon">✖</div>
+        <span>UNPAID</span>
+        <a href="LINK_HERE" target="_blank" class="pay-button">Pay Here Now</a>
+      </div>
+    </div>
+  `;
+const unpaidNotice = ""; // No need for a separate unpaidNotice block anymore
+
+
+        if (isPaid) {
+          confetti({ particleCount: 150, spread: 80, origin: { y: 0.6 } });
+          successSound.play();
+        } else {
+          resultDiv.classList.add('shake', 'pulse-red');
+          setTimeout(() => resultDiv.classList.remove('shake', 'pulse-red'), 1000);
+          startSadEmojiRain();
+        }
+
+        const elapsedMsg = `<div style="text-align: center; margin-top: 8px; font-size: 14px; color: #777;">
+  ✅ Fetched in <strong>${totalTime}s</strong>. ${randomLine}
+</div>`;
+
+// HISTORY
+                    let historyHTML = `
+                <div style="margin-top: 20px;">
+                  <h4 style="text-align: center;">📘 Payment History</h4>
+                  <ul style="list-style: none; padding: 0; font-size: 14px;">`;
+
+              Object.entries(data.history)
+  .sort((a, b) => {
+    const normalize = (y) => y.replace(/[^\d]/g, '').slice(0, 4);
+    return parseInt(normalize(b[0])) - parseInt(normalize(a[0]));
+  })
+  .forEach(([year, status]) => {
+    const cleanStatus = status.trim().toLowerCase();
+    const isPaid = cleanStatus === "paid";
+    const displayStatus = isPaid ? "PAID" : "UNPAID";
+    const color = isPaid ? "#e8f5e9" : "#fff3e0";
+    const textColor = isPaid ? "#2e7d32" : "#e67e22";
+    const border = isPaid ? "#c8e6c9" : "#f4b183";
+
+    historyHTML += `
+      <li style="
+        background-color: ${color};
+        color: ${textColor};
+        border-left: 5px solid ${border};
+        border-radius: 8px;
+        padding: 10px 14px;
+        margin-bottom: 8px;
+        text-align: left;
+        font-weight: 500;
+      ">
+        <strong>${year}:</strong> ${displayStatus}
+      </li>`;
+  });
+
+
+              historyHTML += `</ul></div>`;
+
+ // END HISTORY HERE
+                        resultDiv.innerHTML = `
+              ${statusBanner}
+              ${elapsedMsg}
+              <hr style="margin: 20px 0;" />
+
+              <div style="
+                background-color: var(--container-bg);
+                border-radius: 12px;
+                box-shadow: 0 2px 10px rgba(0, 0, 0, 0.08);
+                padding: 24px;
+                margin-bottom: 20px;
+                color: var(--text);
+              ">
+                <p><strong>👤 Name:</strong> ${data.name}</p>
+                <p><strong>🏫 Department:</strong> ${data.department}</p>
+                <p><strong>📚 Year Level:</strong> ${data.yearLevel}</p>
+                <p><strong>📅 Date Paid:</strong> ${data.datePaid}</p>
+                <p><strong>💳 Total Fee:</strong> <span style="color: var(--paid);">₱${data.total}</span></p>
+                <p><strong>✅ Amount Paid:</strong> <span style="color: var(--paid);">₱${data.paid}</span></p>
+                <p><strong>🧾 Balance:</strong> <span style="color: var(--unpaid);">₱${data.balance}</span></p>
+                <p><strong>📄 OR No.:</strong> ${data.orNumber}</p>
+              </div>
+
+              <div style="
+                background-color: var(--info-bg);
+                border-radius: 12px;
+                box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+                padding: 20px;
+                margin-bottom: 20px;
+                color: var(--text);
+              ">
+                ${historyHTML}
+              </div>
+
+              <div style="text-align: center; margin-top: 24px;">
+                <a href="https://www.facebook.com/cengcsc" target="_blank" class="fb-button">
+                  👉 Visit our Facebook Page
+                </a>
+              </div>
+            `;
+
+
+
+        resultDiv.classList.add("visible");
+
+resultDiv.scrollIntoView({
+  behavior: "smooth",
+  block: "start"
+});
+
+
+      }).getPaymentStatus(id);
+    }
+
+    function toggleDarkMode() {
+      document.body.classList.toggle("dark");
+    }
+
+    window.onload = () => {
+      studentIdInput.focus();
+    };
+  </script>
+</body>
+</html>
