@@ -10,7 +10,7 @@ function doGet(e) {
  * Fetches payment status based on student ID from the "Payments" sheet
  */
 function getPaymentStatus(studentId) {
-  const sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName("deploymentSource"); // UPDATE THIS WHEN NEEDED
+  const sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName("deploymentSource"); // UPDATE THIS WHEN NEEDED //eto kasi attached na sya sa google sheet mismo
 
   const finder = sheet.getRange("A:A")
     .createTextFinder(studentId.trim())
