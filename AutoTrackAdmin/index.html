@@ -1,0 +1,466 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Student Payment Editor</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap" rel="stylesheet">
+  <script src="https://html2canvas.hertzen.com/dist/html2canvas.min.js"></script>
+ <style>
+    :root {
+      --glass-bg: rgba(255, 255, 255, 0.6);
+      --glass-border: rgba(0, 0, 0, 0.1);
+      --text: #1a1a1a;
+      --primary: #1f2937;
+      --accent: #374151;
+      --bg: #f9fafb;
+      --blur: blur(16px);
+      --shadow: rgba(0, 0, 0, 0.06);
+      --highlight: #d1d5db;
+    }
+    * { box-sizing: border-box; }
+    body {
+      font-family: 'Inter', sans-serif;
+      margin: 0;
+      padding: 0;
+      background: var(--bg);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+    nav {
+      position: sticky;
+      top: 0;
+      width: 100%;
+      backdrop-filter: var(--blur);
+      background-color: var(--glass-bg);
+      border-bottom: 1px solid var(--glass-border);
+      padding: 0.75rem 2rem;
+      text-align: center;
+      box-shadow: 0 2px 6px var(--shadow);
+    }
+    nav h1 {
+      font-size: 1.3rem;
+      color: var(--text);
+      margin: 0;
+    }
+    .header-info {
+      text-align: center;
+      margin: 1.5rem 0 0.25rem;
+      color: var(--text);
+    }
+    .header-info h2 {
+      margin: 0;
+      font-size: 1.3rem;
+      font-weight: 600;
+    }
+    .header-info h3 {
+      margin: 0.2rem 0;
+      font-size: 1rem;
+      font-weight: 500;
+    }
+    .main-wrapper {
+      display: flex;
+      justify-content: center;
+      align-items: flex-start;
+      gap: 2rem;
+      padding: 2rem;
+      width: 100%;
+      max-width: 1200px;
+    }
+    .container {
+      flex: 1;
+      max-width: 640px;
+    }
+    .glass-card {
+      background: var(--glass-bg);
+      border: 1px solid var(--glass-border);
+      backdrop-filter: var(--blur);
+      border-radius: 20px;
+      padding: 2rem;
+      width: 100%;
+      box-shadow: 0 6px 15px var(--shadow);
+    }
+    .input-group { margin-bottom: 1.5rem; }
+    label {
+      display: block;
+      margin-bottom: 0.25rem;
+      font-weight: 600;
+      color: var(--text);
+    }
+    input[type="text"], input[type="password"] {
+      width: 100%;
+      padding: 0.75rem;
+      border-radius: 12px;
+      border: 1px solid var(--glass-border);
+      outline: none;
+      font-size: 1rem;
+      background: rgba(255, 255, 255, 0.6);
+      box-shadow: inset 1px 1px 3px rgba(0,0,0,0.05);
+    }
+    input:focus {
+      border-color: var(--accent);
+      box-shadow: 0 0 0 2px rgba(107, 114, 128, 0.2);
+    }
+    input[type="checkbox"] {
+      width: 1.2rem;
+      height: 1.2rem;
+      border-radius: 4px;
+      appearance: none;
+      border: 2px solid orange;
+      outline: none;
+      cursor: pointer;
+      transition: border-color 0.2s, box-shadow 0.2s;
+    }
+    input[type="checkbox"] {
+  width: 1.2rem;
+  height: 1.2rem;
+  border-radius: 4px;
+  appearance: none;
+  border: 2px solid orange;
+  outline: none;
+  cursor: pointer;
+  transition: border-color 0.2s, box-shadow 0.2s;
+  position: relative;
+  background-color: white;
+}
+
+.toggle-btn {
+  padding: 0.4rem 1rem;
+  border: none;
+  border-radius: 8px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background-color 0.3s, color 0.3s;
+  min-width: 80px;
+  text-align: center;
+  font-size: 0.95rem;
+}
+
+.toggle-btn.paid {
+  background-color: #10b981; /* Tailwind Emerald-500 */
+  color: white;
+}
+
+.toggle-btn.unpaid {
+  background-color: #f59e0b; /* Tailwind Amber-500 */
+  color: white;
+}
+
+
+/* Add this new part */
+input[type="checkbox"]:checked::after {
+  content: "✔";
+  color: green;
+  font-size: 0.85rem;
+  position: absolute;
+  top: 0;
+  left: 2px;
+}
+
+    .button-group {
+      display: flex;
+      justify-content: flex-end;
+      gap: 1rem;
+      margin-top: 1rem;
+    }
+    button {
+      padding: 0.6rem 1.2rem;
+      border: none;
+      border-radius: 10px;
+      color: white;
+      background-color: var(--primary);
+      font-weight: 600;
+      font-size: 1rem;
+      cursor: pointer;
+      box-shadow: 1px 2px 6px var(--shadow);
+      transition: transform 0.2s, box-shadow 0.2s;
+    }
+    button:hover {
+      transform: translateY(-1px);
+      box-shadow: 2px 5px 10px var(--shadow);
+    }
+    .btn-search, .btn-save, .btn-clear, .receipt-download {
+      background-color: var(--accent);
+    }
+    .checkbox-section {
+      margin: 1.5rem 0;
+    }
+    .checkbox-section h4 {
+      margin-bottom: 0.5rem;
+      font-size: 1rem;
+      color: var(--text);
+    }
+    .checkbox-line {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 0.8rem 1rem;
+      margin-bottom: 0.6rem;
+      border-radius: 12px;
+      background: #f3f4f6;
+      border: 1px solid #e5e7eb;
+    }
+    .loading {
+      text-align: center;
+      margin-top: 2rem;
+      font-size: 1.1rem;
+      color: var(--text);
+    }
+    #receiptContainer {
+      flex: 0 0 360px;
+      padding: 1rem;
+    }
+    #receiptPreview {
+      position: relative;
+      overflow: hidden;
+      background: #fdfcf9;
+      background-image: linear-gradient(rgba(255,255,255,0.8), rgba(255,255,255,0.8)), url('https://www.transparenttextures.com/patterns/paper-fibers.png');
+      padding: 1.5rem;
+      width: 100%;
+      border: 1px solid #ddd;
+      border-radius: 12px 12px 0 0;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+      font-family: 'Inter', sans-serif;
+      font-size: 14px;
+      color: #333;
+      text-align: left;
+    }
+    .torn-bottom::after {
+      content: "";
+      position: absolute;
+      bottom: -20px;
+      left: 0;
+      width: 100%;
+      height: 40px;
+      background: url('data:image/svg+xml;utf8,<svg viewBox="0 0 100 10" xmlns="http://www.w3.org/2000/svg"><path d="M0 10 Q5 5,10 10 T20 10 T30 10 T40 10 T50 10 T60 10 T70 10 T80 10 T90 10 T100 10 V0 H0 Z" fill="%23fdfcf9"/></svg>') no-repeat bottom center;
+      background-size: cover;
+      z-index: 2;
+    }
+    #receiptPreview h3 {
+      text-align: center;
+      margin-bottom: 1rem;
+    }
+    .receipt-row {
+      display: flex;
+      justify-content: space-between;
+      margin-bottom: 8px;
+    }
+    .receipt-label {
+      font-weight: 600;
+      text-transform: uppercase;
+    }
+    .receipt-serial {
+      margin-top: 1rem;
+      padding-top: 1rem;
+      border-top: 1px dashed #ccc;
+      font-family: monospace;
+      font-size: 12px;
+    }
+    .receipt-footer {
+      margin-top: 10px;
+      font-size: 11px;
+      color: #777;
+      text-align: center;
+    }
+  </style>
+</head>
+<body>
+  <div class="header-info">
+    <h3>Bicol University - College of Engineering</h3>
+    <h2>COLLEGE STUDENT COUNCIL</h2>
+    <h3>Academic Year 2025-2026</h3>
+    <h1>🎓 BUCENG-CSC Payment Editor</h1>
+  </div>
+
+  <div class="main-wrapper">
+   
+    <div class="container">
+      <div class="glass-card">
+        <div class="input-group">
+          <label for="studentId">Student ID:</label>
+          <input type="text" id="studentId" placeholder="Enter Student ID" />
+        </div>
+        <div class="button-group">
+          <button class="btn-search" onclick="searchStudent()">🔍 Search</button>
+        </div>
+        <div id="result"></div>
+      </div>
+    </div>
+     <div id="receiptContainer"></div>
+  </div>
+
+  <script>
+    let studentRowIndex = null;
+    let selectedStudent = null;
+
+    function toggleStatus(button) {
+  const current = button.dataset.status;
+  if (current === "PAID") {
+    button.dataset.status = "UNPAID";
+    button.classList.remove("paid");
+    button.classList.add("unpaid");
+    button.textContent = "UNPAID";
+  } else {
+    button.dataset.status = "PAID";
+    button.classList.remove("unpaid");
+    button.classList.add("paid");
+    button.textContent = "PAID";
+  }
+}
+
+
+    function searchStudent() {
+      const id = document.getElementById("studentId").value.trim();
+      const resultDiv = document.getElementById("result");
+      if (!id) return;
+      resultDiv.innerHTML = `<div class="loading">🔄 Searching student record...</div>`;
+      google.script.run.withSuccessHandler(displayStudent).getStudentById(id);
+    }
+
+    function displayStudent(data) {
+      const result = document.getElementById("result");
+      result.innerHTML = "";
+      if (!data.found) {
+        result.innerHTML = `<p style='color:red;'>❌ Student not found.</p>`;
+        return;
+      }
+      studentRowIndex = data.rowIndex;
+      selectedStudent = data;
+
+      const sortedYears = Object.entries(data.years).sort((a, b) => {
+        if (a[0] === "2025-2026") return -1;
+        if (b[0] === "2025-2026") return 1;
+        return a[0].localeCompare(b[0]);
+      });
+
+      result.innerHTML = `
+      <div class="glass-card" style="margin-bottom: 1.5rem;">
+        <div class="input-group"><label>Name:</label><div>${data.name}</div></div>
+        <div class="input-group"><label>Department:</label><div>${data.department}</div></div>
+        <div class="input-group"><label>Year Level:</label><div>${data.yearLevel}</div></div>
+      </div>
+        <div class="checkbox-section">
+          <h4>Kindly check the records of payment</h4>
+         <p style="margin-top: -0.5rem; font-size: 0.95rem; color: #555;">
+  After receiving their payment, check again their student ID number and ensure that the dashboard's data is correct.
+</p>
+         ${sortedYears.map(([year, value]) => {
+  const is2025 = year === "2025-2026";
+  const isPaid = String(value).trim().toUpperCase() === "PAID";
+ const checkbox = `
+  <button 
+    type="button" 
+    class="toggle-btn ${isPaid ? 'paid' : 'unpaid'}" 
+    data-year="${year}" 
+    data-status="${isPaid ? 'PAID' : 'UNPAID'}"
+    onclick="toggleStatus(this)"
+  >
+    ${isPaid ? 'PAID' : 'UNPAID'}
+  </button>`;
+
+  const borderStyle = is2025
+    ? `style="border: 2px solid ${isPaid ? 'green' : 'orange'}"`
+    : "";
+
+  return `
+    <div class="checkbox-line" ${borderStyle}>
+      <span>${year}</span>
+      ${checkbox}
+    </div>
+  `;
+}).join('')}
+
+        </div>
+
+        <div class="input-group">
+          <label for="auditorPass">Auditor Password:</label>
+          <input type="password" id="auditorPass" placeholder="Enter approval password" />
+        </div>
+
+        <div class="button-group">
+          <button class="btn-save" onclick="save()">💾 Save Changes</button>
+          <button class="btn-clear" onclick="clearRecord()">🧹 Clear Record</button>
+        </div>
+      `;
+    }
+
+    function save() {
+      const pass = document.getElementById("auditorPass").value;
+      if (pass !== "1230") {
+        alert("❌ Incorrect auditor password.");
+        return;
+      }
+      const buttons = document.querySelectorAll(".toggle-btn");
+const yearStatus = {};
+let latestPaidYear = null;
+
+buttons.forEach(btn => {
+  const year = btn.dataset.year;
+  const isPaid = btn.dataset.status === "PAID";
+  if (isPaid) latestPaidYear = year;
+  yearStatus[year] = isPaid;
+});
+
+
+      const saveBtn = document.querySelector(".btn-save");
+      saveBtn.innerHTML = "💾 Saving...";
+      saveBtn.disabled = true;
+
+      google.script.run.withSuccessHandler(() => {
+        saveBtn.innerHTML = "💾 Save Changes";
+        saveBtn.disabled = false;
+        alert("✅ Payment statuses updated.");
+        generateReceipt(latestPaidYear);
+      }).updateStudentPayment(studentRowIndex, yearStatus);
+    }
+
+    function clearRecord() {
+      const checkboxes = document.querySelectorAll("input[name='year']");
+      checkboxes.forEach(cb => cb.checked = false);
+    }
+
+    function generateReceipt(paidYear) {
+      const container = document.getElementById("receiptContainer");
+      const today = new Date();
+      const formattedDate = today.toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' });
+      const dateStr = `${today.getMonth()+1}`.padStart(2,'0') + `${today.getDate()}`.padStart(2,'0') + `${today.getFullYear()}`.slice(2);
+      const reversedYear = paidYear.replace(/\D/g, '').split('').reverse().join('');
+      const serial = selectedStudent.id + dateStr + reversedYear;
+
+      const html = `
+        <div id="receiptPreview" class="torn-bottom">
+          <h3>📜 BUCENG-CSC Digital Receipt</h3>
+          <div class="receipt-row"><span class="receipt-label">Date Paid:</span><span>${formattedDate}</span></div>
+          <div class="receipt-row"><span class="receipt-label">Student ID:</span><span>${selectedStudent.id}</span></div>
+          <div class="receipt-row"><span class="receipt-label">Name:</span><span>${selectedStudent.name}</span></div>
+          <div class="receipt-row"><span class="receipt-label">Department:</span><span>${selectedStudent.department}</span></div>
+          <div class="receipt-row"><span class="receipt-label">Year Level:</span><span>${selectedStudent.yearLevel}</span></div>
+          <div class="receipt-row"><span class="receipt-label">School Year Paid:</span><span>${paidYear}</span></div>
+          <div class="receipt-serial"><strong>Serial Number:</strong><br>${serial}</div>
+          <div class="receipt-footer">This is a system-generated receipt.</div>
+          <div style="text-align:center; margin-top:10px;">
+           <button class="receipt-download" onclick="downloadReceipt()">⬇️ Download Receipt</button>
+       </div>
+        </div>`;
+      container.innerHTML = html;
+      google.script.run.saveSerialNumber(selectedStudent.id, serial);
+    }
+
+    function downloadReceipt() {
+      html2canvas(document.querySelector("#receiptPreview")).then(canvas => {
+        const serial = document.querySelector(".receipt-serial").textContent.replace("Serial Number:", "").trim();
+        const name = selectedStudent.name.replace(/[^a-z0-9]/gi, '_');
+        const filename = `${serial}_${name}.jpg`;
+
+        const link = document.createElement('a');
+        link.download = filename;
+        link.href = canvas.toDataURL("image/jpeg");
+        link.click();
+      });
+    }
+
+  </script>
+</body>
+</html>
