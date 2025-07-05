@@ -1,6 +1,10 @@
 # autoTrack2526
 ## Eto yung link sa AutoTrack Spreadsheet aka DATABASE NG LAHAT NG CSC FEE:
 const SPREADSHEET_ID = "1ChF3KrE_nlZ6WVCeHyv--upPpC_ziHgm3G-XMBwhplU";
+makukuha yan dito:
+https://docs.google.com/spreadsheets/d/1ChF3KrE_nlZ6WVCeHyv--upPpC_ziHgm3G-XMBwhplU/edit?gid=0#gid=0
+
+need mo iedit itong IDs both sa AutoTrack and Admin side para gumana
 ## Eto yung spreadsheet IDs nila
 const SHEET_NAME = "deploymentSource"; //TEST DEPLOYMENT, ACTUAL sheet name is  "deploymentSource" OR testingdeploySource
 kailangan deploymentSource yung name ng test spreadsheet mo tas ganito format:
